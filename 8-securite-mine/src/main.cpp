@@ -10,7 +10,7 @@
 //
 //
 // Structure de données contenant le mutex
-typedef struct mutex_data {
+typedef struct shared_data {
 
 	//
 	// LISTE DES EVENEMENTS POUVANT ETRE ECHANGES ENTRE
@@ -18,23 +18,14 @@ typedef struct mutex_data {
 	// DE TRAITEMENT
 	//
 
-	const char EVT_START     = 's';
-	const char EVT_STOP      = 'S';
-	const char EVT_END       = 'F';
-	const char EVT_EAU_BAS   = 'b';
-	const char EVT_EAU_HAUT  = 'h';
-	const char EVT_METH_BAS  = 'B';
-	const char EVT_METH_HAUT = 'H';
-	const char EVT_METH_OK   = 'O';
 
 	//
 	// LA FILE DE MESSAGE PERMETTANT L'ECHANGE D'INFO
 	//
 
-	int pipe_ctrl[2];
 
 	//
-	// LA FILE DE MESSAGE PERMETTANT L'ECHANGE D'INFO
+	// LES DIFFERENTS NIVEAUX PREDETERMINES
 	//
 
 	const int NIV_EAU_HAUT  =  300;
@@ -63,19 +54,11 @@ typedef struct mutex_data {
 	// LES MUTEX QUI VONT PERMETTRE DE FAIRES LES ENABLEs
 	//
 
-	pthread_mutex_t mutex_methane;
-	pthread_mutex_t mutex_eau;
-	pthread_mutex_t mutex_alarm;
-	pthread_mutex_t mutex_pompe;
 
 	//
 	// LES BOOL PARTAGES POUR FAIRE LES
 	//
 
-	bool enable_methane = false;
-	bool enable_eau     = false;
-	bool enable_alarme  = false;
-	bool enable_pompe   = false;
 
 	//
 	// LE BOOL PARTAGE CLORE L'EXECUTION DU SYSTEME
@@ -89,7 +72,7 @@ typedef struct mutex_data {
 
 	int  alarm_level    = 1;
 
-} mutex_data;
+} shared_data;
 //
 //
 //
@@ -100,7 +83,7 @@ typedef struct mutex_data {
 void* thread_keyboard(void *arg)
 {
 	printf("(II) Starting thread_controleur\n");
-	mutex_data *md = (mutex_data*) arg;
+	shared_data *md = (shared_data*) arg;
 
 	// ( c == 's' ) 				: start the system
     // ( c == 'S' ) 				: stop  the system
@@ -122,7 +105,7 @@ void* thread_keyboard(void *arg)
 void* thread_controleur(void *arg)
 {
 	printf("(II) Starting thread_controleur\n");
-	mutex_data *md = (mutex_data*) arg;
+	shared_data *md = (shared_data*) arg;
 
 
 	printf("(II) Ending thread_controleur\n");
@@ -137,7 +120,7 @@ void* thread_controleur(void *arg)
 void* thread_methane(void *arg)
 {
 	printf("(II) Starting thread_methane\n");
-	mutex_data *md = (mutex_data*) arg;
+	shared_data *md = (shared_data*) arg;
 
 
 	printf("(II) Ending thread_methane\n");
@@ -152,7 +135,7 @@ void* thread_methane(void *arg)
 void* thread_eau(void *arg)
 {
 	printf("(II) Starting thread_eau\n");
-	mutex_data *md = (mutex_data*) arg;
+	shared_data *md = (shared_data*) arg;
 
 
 	printf("(II) Ending thread_eau\n");
@@ -167,7 +150,7 @@ void* thread_eau(void *arg)
 void* thread_pompe(void *arg)
 {
 	printf("(II) Starting thread_pompe\n");
-	mutex_data *md = (mutex_data*) arg;
+	shared_data *md = (shared_data*) arg;
 
 
 	printf("(II) Ending thread_pompe\n");
@@ -182,7 +165,7 @@ void* thread_pompe(void *arg)
 void* thread_alarme(void *arg)
 {
 	printf("(II) Starting thread_alarme\n");
-	mutex_data *md = (mutex_data*) arg;
+	shared_data *md = (shared_data*) arg;
 
 
 	printf("(II) Ending thread_alarme\n");
@@ -200,7 +183,7 @@ int main() {
 	//
 	// Création de la structure de données
 	//
-	mutex_data md;
+	shared_data md;
 
 	//
 	// Initialisation du mutex
@@ -212,10 +195,6 @@ int main() {
 	// Boucle de création des mutex
 	//
 
-	pthread_mutex_init(&md.mutex_methane, NULL);
-	pthread_mutex_init(&md.mutex_eau,     NULL);
-	pthread_mutex_init(&md.mutex_alarm,   NULL);
-	pthread_mutex_init(&md.mutex_pompe,   NULL);
 
 	//
 	// Boucle de création des mutex
@@ -238,13 +217,8 @@ int main() {
 	pthread_join(md.thread_4, NULL);
 
 	//
-	// Destruction du mutex
+	// Destruction des mutex
 	//
-
-	pthread_mutex_destroy(&md.mutex_methane);
-	pthread_mutex_destroy(&md.mutex_eau    );
-	pthread_mutex_destroy(&md.mutex_alarm  );
-	pthread_mutex_destroy(&md.mutex_pompe  );
 
 	return EXIT_SUCCESS;
 }
